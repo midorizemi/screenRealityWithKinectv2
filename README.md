@@ -1,7 +1,8 @@
 Screen Reality with KinectV2
 ====
 
-This project is for to learn 3D geometoria and exercise coding and using library and kinect.  
+This project is made for to learn 3D geometoria and exercise coding and using library and kinect.  
+You can get experience of VR with normal display. 
 We have been impressed the VR application as [this art](http://blog.manfredas.com/3d-display-simulation-using-head-tracking-with-microsoft-kinect/, "3D Display Simulation using Head-Tracking with Kinect") and [this art](https://github.com/agirault/screenReality/blob/master/main.cpp, "screenReality").
 So, We have tried to make the VR screen with processing and KinectV2.
 

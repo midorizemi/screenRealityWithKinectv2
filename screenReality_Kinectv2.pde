@@ -10,10 +10,12 @@ int camWidth;
 int camHeight;
 
 void setup() {
-  size(1024, 768, P3D);
+  //size(1228, 928, P3D);
+  fullScreen(P3D);
 
   kinect = new KinectPV2(this);
   kinect.enableBodyTrackImg(true);
+  kinect.enableColorImg(true);
   kinect.enableColorImg(true);
 
   //enable 3d  with (x,y,z) position
@@ -29,24 +31,36 @@ void setup() {
   
   noStroke();
   
-  beginCamera();
-  camera(0,0,500,0,0,0,0,1,0);
-  endCamera();
+  //beginCamera();
+  //camera(0,0,500,0,0,0,0,1,0);
+  //endCamera();
 }
 
 void draw() {
-  ambientLight(150, 150, 150);    //環境光を当てる
-  lightSpecular(255, 255, 255);    //光の鏡面反射色（ハイライト）を設定
-  directionalLight(100, 100, 100, 0, 1, -1);    //指向性ライトを設定
+  
+  ambientLight(150, 150, 150); 
+  lightSpecular(255, 255, 255);
+  directionalLight(100, 100, 100, 0, 1, -1);
   background(0);
+  image(kinect.getColorImage(), 0, 0, 320, 240);
   
   detectHead();
-  beginCamera();
-  camera(camX, camY, camZ,0,0,0,0,1,0);
-  endCamera();
+  //beginCamera();
+  //camera(camX, camY, camZ,0,0,0,0,1,0);
+  //endCamera();
   
+  pushMatrix();
+  translate(width/2, height/2, 0);
+  translate(camX, camY, 0);
+  scale(camZ);
   fill(255);
   box(100);
+  
+  pushMatrix();
+  translate(100, 100, -300);
+  fill(#FFA500);
+  box(100);
+  popMatrix();
   
   noStroke();
   fill(255, 0,0);
@@ -62,6 +76,8 @@ void draw() {
   rotateX(HALF_PI);
   fill(0, 0, 255);
   pillar(200, 10, 10);
+  popMatrix();
+  
   popMatrix();
 }
 
@@ -93,13 +109,13 @@ void detectHead() {
       float normHeadX = rawHeadX;
       float normHeadY = rawHeadY;
 
-      float tempZ = normHeadZ*250;
-      float tempX = normHeadX*500;
-      float tempY = normHeadY*500;
+      float tempZ = normHeadZ;
+      float tempX = normHeadX*600;
+      float tempY = normHeadY*600;
 
-      camZ = tempZ ;
-      camX = tempX ;
-      camY = -tempY ;
+      camZ = 1/tempZ ;
+      camX = -tempX ;
+      camY = tempY ;
     }
   }
 }
