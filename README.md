@@ -20,6 +20,7 @@ So, We have tried to make the VR screen with processing and KinectV2.
 + Play Enjoy!
 
 ## TODO
+collision detection
 
 ## License
 MIT License http://en.wikipedia.org/wiki/MIT_License
