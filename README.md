@@ -20,8 +20,10 @@ So, We have tried to make the VR screen with processing and KinectV2.
 + Play Enjoy!
 
 ## TODO
-collision detection
-add gestures
+* collision detection
+* add gestures
+* make map
+
 
 ## License
 MIT License http://en.wikipedia.org/wiki/MIT_License
