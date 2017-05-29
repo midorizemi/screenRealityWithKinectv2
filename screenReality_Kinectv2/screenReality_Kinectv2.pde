@@ -28,6 +28,16 @@ int y = 0;
 int z = -20;
 GO_OPERATION gopr = GO_OPERATION.S;
 
+boolean isKinectEnabled =true;
+boolean isWipeDisplayed = true;
+
+color hDefo = color(255, 255, 255, 150);
+color hOpen = color(255, 0, 0, 150);
+color hClose = color(0, 0, 255, 150);
+color hLasso = color(255, 255, 0, 150);
+color hrStatusCol = hDefo;
+color hlStatusCol = hDefo;
+
 
 void setup() {
   size(1228, 928, P3D);
@@ -47,37 +57,45 @@ void setup() {
   cx = pixelToCm(width);
   cy = pixelToCm(height);
   noStroke();
-  eyeX = width/2.0;
-  eyeY = height/2.0;
-  eyeZ = 300;
+  //eyeX = width/2.0;
+  //eyeY = height/2.0;
+  //eyeZ = 300;
+  eyeX = 0;
+  eyeY = 0;
+  eyeZ = 0;
   cX = width/2.0;
   cY = height/2.0;
   cZ = 0;
   upX = 0;
   upY = 1;
   upZ = 0;
-  camera(width/2, height/2, 300, width/2, height/2, 0, 0, 1, 0);
+  beginCamera();
+  //camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
+  camera();
+  endCamera();
 }
+
 void draw() {
   ambientLight(150, 150, 150); 
   lightSpecular(255, 255, 255);
   directionalLight(100, 100, 100, 0, 1, -1);
   background(0);
-  image(kinect.getColorImage(), 0, 0, 320, 240);
-  if (keyPressed == true) {
+  drawWipe();
+
+  if (keyPressed == true && !isKinectEnabled) {
     println("HOGE:"+key);
     switch(key) {
     case 'a':
-      eyeX -= 1.0;
-      break;
+      eyeX -= 10;
+      break; //<>//
     case 'd':
-      eyeX += 1.0;
+      eyeX += 10;
       break;
     case 'w':
-      eyeY -= 1.0;
+      eyeY -= 10;
       break;
     case 'x':
-      eyeY += 1.0; 
+      eyeY += 10; 
       break;
     case 'q':
       camera();
@@ -85,26 +103,25 @@ void draw() {
       //for sphere down
     case 't':
       movement = true; //<>//
+      keyPressed=false;
       break;
     }
-    if (keyCode == UP) { //<>//
-      eyeZ -= 1.0;
+    if (keyCode == UP) {
+      eyeZ -= 10;
     } else if (keyCode == DOWN) {
-      eyeZ += 1.0;
+      eyeZ += 10;
     }
-    keyPressed=false;
   }
   detectHead();
   beginCamera();
   camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
   endCamera();
+  println("X:"+eyeX+ " Y:"+ eyeY+ " Z:"+ eyeZ);
   //gopr = recognizeJesture();
   //for object
   object();
 }
-float camZ=0.5;
-float camX=0;
-float camY=0;
+
 float cx;
 float cy;
 public static final int JOINT_HEAD = KinectPV2.JointType_Head;
@@ -123,18 +140,52 @@ void detectHead() {
       float rawHeadX = joints[JOINT_HEAD].getX();
       float rawHeadY = joints[JOINT_HEAD].getY();
       float rawHeadZ = joints[JOINT_HEAD].getZ();
-      float normHeadZ = rawHeadZ / RANGE_KINECT2;
+      //float normHeadZ = rawHeadZ / RANGE_KINECT2;
+      float normHeadZ = rawHeadZ;
       float normHeadX = rawHeadX;
       float normHeadY = rawHeadY;
-      float tempZ = normHeadZ;
+      float tempZ = normHeadZ*250;
       float tempX = normHeadX*600;
       float tempY = normHeadY*600;
-      camZ = 1/tempZ ;
-      camX = -tempX ;
-      camY = tempY ;
+      eyeZ = tempZ ;
+      eyeX = tempX ;
+      eyeY = -tempY ;
     }
   }
 }
+
+void drawWipe() {
+  if (isWipeDisplayed) {
+    camera();
+    image(kinect.getColorImage(), 0, 0, 320, 240);
+    pushMatrix();
+    translate(320/2, 240/2, 0);
+    rotateX(PI);
+    ArrayList<KSkeleton> skeletonArray =  kinect.getSkeleton3d();
+    //individual JOINTS
+    for (int i = 0; i < skeletonArray.size() && i < 1; i++) {
+      KSkeleton skeleton = (KSkeleton) skeletonArray.get(i);
+      if (skeleton.isTracked()) {
+        KJoint[] joints = skeleton.getJoints();
+        HState hr = handState(joints[KinectPV2.JointType_HandRight].getState());
+        if (hr != HState.NOTRACKED) {
+          fill(hrStatusCol);
+          drawJoint(joints, KinectPV2.JointType_HandRight);
+        }
+        //HState hl = handState(joints[KinectPV2.JointType_HandLeft].getState());
+        //if(hl != HState.NOTRACKED){
+        //  fill(hlStatusCol);
+        //drawJoint(joints, KinectPV2.JointType_HandLeft);
+        //}
+      }
+    }
+    popMatrix();
+  }
+}
+void drawJoint(KJoint[] joints, int jointType) {
+  ellipse(joints[jointType].getX()*150, joints[jointType].getY()*150, 50, 50);
+}
+
 float pixelToCm(int size) {
   return (float) size/PIXEL_NBR_PER_CM;
 }
@@ -162,7 +213,7 @@ void pillar(float length, float radius1, float radius2) {
   }
   endShape();
   //side
-  beginShape(TRIANGLE_STRIP);
+  beginShape(TRIANGLE_STRIP); //<>//
   for (int deg =0; deg <= 360; deg = deg + 5) {
     x = cos(radians(deg)) * radius1;
     y = -length / 2;
@@ -213,7 +264,7 @@ void object() {
         x += dx; //<>//
       } else {
         movement = false;
-        direction = true; //<>//
+        direction = true;
       }
     }
     //TODO go to HOME position
@@ -237,6 +288,7 @@ void object() {
   }
   pushMatrix();
   translate(width/2, height/2, 0);
+  scale(5);
   noFill();
   stroke(255);
   box(mainBoxX, mainBoxY, mainBoxZ);
@@ -272,7 +324,7 @@ void object() {
   box(breadth, thickness, breadth);
   popMatrix();
   pushMatrix();
-  translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]);
+  translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]); //<>//
   box(breadth, thickness, breadth);
   popMatrix();
   //Sphere
@@ -324,7 +376,7 @@ GO_OPERATION recognizeJesture() {
         movement=true; //<>//
         break;
       }
-    } //<>//
+    }
   }
   return go;
 }
@@ -340,15 +392,19 @@ HState handState(int handState) {
   switch(handState) {
   case KinectPV2.HandState_Open:
     status = HState.OPENED;
+    hrStatusCol = hOpen;
     break;
   case KinectPV2.HandState_Closed:
     status = HState.CLOSED;
+    hrStatusCol = hClose;
     break;
   case KinectPV2.HandState_Lasso:
     status = HState.LASSO;
+    hrStatusCol = hLasso;
     break;
   case KinectPV2.HandState_NotTracked:
     status = HState.NOTRACKED;
+    hrStatusCol = hDefo;
     break;
   default:
     status = HState.NOTRACKED;
