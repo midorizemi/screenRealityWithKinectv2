@@ -36,14 +36,14 @@ void setup() {
   noFill();
   frameRate(24);
   kinect = new KinectPV2(this);
-   kinect.enableBodyTrackImg(true);
-   kinect.enableColorImg(true);
-   kinect.enableColorImg(true);
-   //enable 3d  with (x,y,z) position
-   kinect.enableSkeleton3DMap(true);
-   kinect.init();
-   camWidth = kinect.getBodyTrackImage().width;
-   camHeight = kinect.getBodyTrackImage().height;
+  kinect.enableBodyTrackImg(true);
+  kinect.enableColorImg(true);
+  kinect.enableColorImg(true);
+  //enable 3d  with (x,y,z) position
+  kinect.enableSkeleton3DMap(true);
+  kinect.init();
+  camWidth = kinect.getBodyTrackImage().width;
+  camHeight = kinect.getBodyTrackImage().height;
   cx = pixelToCm(width);
   cy = pixelToCm(height);
   noStroke();
@@ -57,9 +57,6 @@ void setup() {
   upY = 1;
   upZ = 0;
   camera(width/2, height/2, 300, width/2, height/2, 0, 0, 1, 0);
-  //beginCamera();
-  //camera(0,0,500,0,0,0,0,1,0);
-  //endCamera();
 }
 void draw() {
   ambientLight(150, 150, 150); 
@@ -90,7 +87,7 @@ void draw() {
       movement = true; //<>//
       break;
     }
-    if (keyCode == UP) {
+    if (keyCode == UP) { //<>//
       eyeZ -= 1.0;
     } else if (keyCode == DOWN) {
       eyeZ += 1.0;
@@ -216,27 +213,27 @@ void object() {
         x += dx; //<>//
       } else {
         movement = false;
-        direction = true;
+        direction = true; //<>//
       }
     }
     //TODO go to HOME position
   } else {
     //moveClane
     switch(gopr) {
-     case R:
-     x += 1;
-     break;
-     case D://no operation
-     break;
-     case S: //Stay
-     break;
-     case L:
-     break;
-     case F:
-     break;
-     case B:
-     break;
-     }
+    case R:
+      x += 1;
+      break;
+    case D://no operation
+      break;
+    case S: //Stay
+      break;
+    case L:
+      break;
+    case F:
+      break;
+    case B:
+      break;
+    }
   }
   pushMatrix();
   translate(width/2, height/2, 0);
@@ -327,7 +324,7 @@ GO_OPERATION recognizeJesture() {
         movement=true; //<>//
         break;
       }
-    }
+    } //<>//
   }
   return go;
 }
