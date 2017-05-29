@@ -22,9 +22,9 @@ int dx = -1;         //to the home position
 int dz = -1;         //to the home position
 int dy = 1;          //downward movement
 //for sphere position
-int x = 40;
+int x = 4-50;
 int y = 0;
-int z = -20;
+int z = 50-4;
 
 GO_OPERATION gopr = GO_OPERATION.S;
 
@@ -87,7 +87,7 @@ void draw() {
   
   ambientLight(150, 150, 150); 
   lightSpecular(255, 255, 255);
-  directionalLight(100, 100, 100, 0, 1, -1); //<>//
+  directionalLight(100, 100, 100, 0, 1, -1); //<>// //<>//
   if (keyPressed == true && !isKinectEnabled) {
     switch(key) {
     case 'a':
@@ -213,7 +213,7 @@ color getHandJestureColor(HState hs) {
 
 float pixelToCm(int size) {
   return (float) size/PIXEL_NBR_PER_CM;
-} //<>// //<>//
+} //<>// //<>// //<>//
 void pillar(float length, float radius1, float radius2) {
   float x, y, z;
   pushMatrix();
@@ -324,7 +324,7 @@ void object() {
   scale(5);
   noFill();
   stroke(255);
-  box(mainBoxX, mainBoxY, mainBoxZ); //<>//
+  box(mainBoxX, mainBoxY, mainBoxZ); //<>// //<>//
   for (int i = 0; i<num; i++) {
     pushMatrix();
     translate(keihinXZ[i*2], mainBoxY/2 - thickness / 2, keihinXZ[i*2+1]); //<>//
