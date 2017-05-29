@@ -78,16 +78,16 @@ void setup() {
   upZ = 0;
 
   beginCamera();
-  //camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
-  camera();
+  camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
   endCamera();
 }
 void draw() {
+  background(0);
+  drawWipe();
+  
   ambientLight(150, 150, 150); 
   lightSpecular(255, 255, 255);
-  directionalLight(100, 100, 100, 0, 1, -1);
-  background(0);
-  drawWipe(); //<>//
+  directionalLight(100, 100, 100, 0, 1, -1); //<>//
   if (keyPressed == true && !isKinectEnabled) {
     switch(key) {
     case 'a':
@@ -213,7 +213,7 @@ color getHandJestureColor(HState hs) {
 
 float pixelToCm(int size) {
   return (float) size/PIXEL_NBR_PER_CM;
-} //<>//
+} //<>// //<>//
 void pillar(float length, float radius1, float radius2) {
   float x, y, z;
   pushMatrix();
@@ -292,6 +292,9 @@ void object() {
         movement = false;
         direction = true;
         collisionStatusCol=normal;
+        for(int i = 0; i < num; i++){
+          boxCollisionStatusCols[i] = normalBox;
+        }
       }
     }
     //TODO go to HOME position
@@ -321,7 +324,7 @@ void object() {
   scale(5);
   noFill();
   stroke(255);
-  box(mainBoxX, mainBoxY, mainBoxZ);
+  box(mainBoxX, mainBoxY, mainBoxZ); //<>//
   for (int i = 0; i<num; i++) {
     pushMatrix();
     translate(keihinXZ[i*2], mainBoxY/2 - thickness / 2, keihinXZ[i*2+1]); //<>//
