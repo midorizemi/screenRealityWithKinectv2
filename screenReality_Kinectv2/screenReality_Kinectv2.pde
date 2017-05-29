@@ -19,9 +19,18 @@ float upX;
 float upY;
 float upZ;
 
+//for objectMovemnent
+boolean movement = false;  //move or not
+boolean direction = true;  //true : downward  false : upward
+int dy = 1;          //downward movement
+//for sphere position
+int x = -40;
+int y = 0;
+int z = -20;
+
 void setup() {
-  //size(1228, 928, P3D);
-  fullScreen(P3D);
+  size(1228, 928, P3D);
+  //fullScreen(P3D);
   
   smooth();
   noFill();
@@ -39,6 +48,7 @@ void setup() {
 
   camWidth = kinect.getBodyTrackImage().width;
   camHeight = kinect.getBodyTrackImage().height;
+  
 
   cx = pixelToCm(width);
   cy = pixelToCm(height);
@@ -74,72 +84,8 @@ void draw() {
   //camera(camX, camY, camZ,0,0,0,0,1,0);
   //endCamera();
   
-  //MainBox
-  int mainBoxX = 100;  //MainBox width
-  int mainBoxY = 100;  //MainBox height
-  int mainBoxZ = 80;   //MainBox depth
-  pushMatrix();
-  translate(width/2, height/2, 0);
-  noFill();
-  stroke(255);
-  box(mainBoxX,mainBoxY,mainBoxZ);
-  
-  /*
-  int lineNumber = 10;
-  for(int i = 1; i <= lineNumber; i++){
-    stroke(255);
-    line(-((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),((float)mainBoxY)/2,-mainBoxZ/2,
-         -((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),-((float)mainBoxY)/2,-mainBoxZ/2);
-    
-    line(-((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2,
-         ((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2);
-  }*/
-  
-  int keihinXZ[] = {-40,-20,
-                    0,-20,
-                    40, -20,
-                    -40, 20,
-                    0, 20,
-                    40, 20};
-  
-  pushMatrix();
-  fill(153,255,153);
-  translate(keihinXZ[0], mainBoxY/2 - 1, keihinXZ[1]);
-  box(10,2,10);
-  popMatrix();
-  
-  pushMatrix();
-  translate(keihinXZ[2], mainBoxY/2 - 1, keihinXZ[3]);
-  box(10,2,10);
-  popMatrix();
-  
-  pushMatrix();
-  translate(keihinXZ[4], mainBoxY/2 - 1, keihinXZ[5]);
-  box(10,2,10);
-  popMatrix();
-  
-  pushMatrix();
-  translate(keihinXZ[6], mainBoxY/2 - 1, keihinXZ[7]);
-  box(10,2,10);
-  popMatrix();
-  
-  pushMatrix();
-  translate(keihinXZ[8], mainBoxY/2 - 1, keihinXZ[9]);
-  box(10,2,10);
-  popMatrix();
-  
-  pushMatrix();
-  translate(keihinXZ[10], mainBoxY/2 - 1, keihinXZ[11]);
-  box(10,2,10);
-  popMatrix();
-  
-  //Sphere
-  pushMatrix();
-  translate(-mainBoxX/2 + 2, -mainBoxY/2 + 2, mainBoxZ/2 - 2);
-  sphere(2);
-  popMatrix();
-  
-  popMatrix();
+  //for object
+  object();
   
   if(keyPressed){
     switch(key){
@@ -157,6 +103,11 @@ void draw() {
       break;
     case 'q':
       camera();
+      break;
+    
+    //for sphere down
+    case 't':
+      movement = true;
       break;
     }
     if(keyCode == UP){
@@ -249,4 +200,121 @@ void pillar(float length, float radius1, float radius2) {
   }
   endShape();
   popMatrix();
+}
+
+void object(){
+  //MainBox
+  int mainBoxX = 100;  //MainBox width
+  int mainBoxY = 100;  //MainBox height
+  int mainBoxZ = 80;   //MainBox depth
+  int sphereRad = 2;   //radius of the sphere
+  int thickness = 20;   //thickness of the keihin
+  int breadth = 10;    //width of the keihin
+  int num = 6;
+  
+  int keihinXZ[] = {-40,-20,  //point(x,z) of the keihin
+                    0,-20,
+                    40, -20,
+                    -40, 20,
+                    0, 20,
+                    40, 20};  
+  
+  //for mainBox movement
+  if(movement){
+    
+    //downward
+    if(direction){
+      if(collisionDetection(sphereRad, y, breadth, thickness, keihinXZ, mainBoxY, num)){  //collision detection
+        direction = false;
+      }
+      else if(mainBoxY >= sphereRad + y){  //move downward
+        y += dy;
+      }
+      else{
+        direction = false;
+      }
+    }
+    
+    //upward
+    if(!direction){
+      if(sphereRad <= y){
+        y -= dy;
+      }
+      else{
+        movement = false;
+        direction = true;
+      }
+    }
+  }  
+  
+  pushMatrix();
+  translate(width/2, height/2, 0);
+  noFill();
+  stroke(255);
+  box(mainBoxX,mainBoxY,mainBoxZ);
+  
+  /*
+  int lineNumber = 10;
+  for(int i = 1; i <= lineNumber; i++){
+    stroke(255);
+    line(-((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),((float)mainBoxY)/2,-mainBoxZ/2,
+         -((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),-((float)mainBoxY)/2,-mainBoxZ/2);
+    
+    line(-((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2,
+         ((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2);
+  }*/
+  
+  pushMatrix();
+  fill(153,255,153);
+  translate(keihinXZ[0], mainBoxY/2 - thickness / 2, keihinXZ[1]);
+  box(breadth,thickness,breadth);
+  popMatrix();
+  
+  pushMatrix();
+  translate(keihinXZ[2], mainBoxY/2 - thickness / 2, keihinXZ[3]);
+  box(breadth,thickness,breadth);
+  popMatrix();
+  
+  pushMatrix();
+  translate(keihinXZ[4], mainBoxY/2 - thickness / 2, keihinXZ[5]);
+  box(breadth,thickness,breadth);
+  popMatrix();
+  
+  pushMatrix();
+  translate(keihinXZ[6], mainBoxY/2 - thickness / 2, keihinXZ[7]);
+  box(breadth,thickness,breadth);
+  popMatrix();
+  
+  pushMatrix();
+  translate(keihinXZ[8], mainBoxY/2 - thickness / 2, keihinXZ[9]);
+  box(breadth,thickness,breadth);
+  popMatrix();
+  
+  pushMatrix();
+  translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]);
+  box(breadth,thickness,breadth);
+  popMatrix();
+  
+  //Sphere
+  pushMatrix();
+  translate(x, -mainBoxY/2 + sphereRad + y, z);
+  sphere(sphereRad);
+  popMatrix();
+  
+  popMatrix();
+ 
+}
+
+boolean collisionDetection(int sphereRad, int y, int breadth, int thickness, int[] keihinXZ, int mainBoxY, int num){
+  
+  for(int i=0;i<num;i++){
+    if(x <= keihinXZ[2*i] + breadth && x >= keihinXZ[2*i] - breadth &&
+       y >= mainBoxY - thickness - sphereRad &&
+       z <= keihinXZ[2*i+1] + breadth && z >= keihinXZ[2*i+1] - breadth){
+         print("1");
+      return true;
+    }
+  }
+  
+  return false;
 }
