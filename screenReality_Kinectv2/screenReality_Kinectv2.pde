@@ -28,15 +28,24 @@ int z = -20;
 
 GO_OPERATION gopr = GO_OPERATION.S;
 
-boolean isKinectEnabled =true;
-boolean isWipeDisplayed = true;
+boolean isKinectEnabled =true;//interface is Kinect or Keyboard
+boolean isWipeDisplayed = true;//show camera Wipe
 
+//Hand jestuer indicater
 color hDefo = color(255, 255, 255, 150);
 color hOpen = color(255, 0, 0, 150);
 color hClose = color(0, 0, 255, 150);
 color hLasso = color(255, 255, 0, 150);
 color hrStatusCol = hDefo;
 color hlStatusCol = hDefo;
+
+//collision color
+color normal = color(255);
+color normalBox = color(153, 255, 153);
+color hit = color(255, 0, 0);
+color fail = color(0, 0, 255);
+color collisionStatusCol = normal;
+color[] boxCollisionStatusCols ={normalBox, normalBox, normalBox, normalBox, normalBox, normalBox};
 
 void setup() {
   size(1228, 928, P3D);
@@ -78,9 +87,8 @@ void draw() {
   lightSpecular(255, 255, 255);
   directionalLight(100, 100, 100, 0, 1, -1);
   background(0);
-  drawWipe();
+  drawWipe(); //<>//
   if (keyPressed == true && !isKinectEnabled) {
-    println("HOGE:"+key);
     switch(key) {
     case 'a':
       eyeX -= 10;
@@ -144,7 +152,7 @@ void detectHead() {
       float tempZ = normHeadZ;
       float tempX = normHeadX*400+width/2;
       float tempY = normHeadY*400-height/2+100;
-      
+
       println("TMPZ:"+tempZ);
       eyeZ = 500+300*tempZ;
       eyeX = tempX ;
@@ -205,7 +213,7 @@ color getHandJestureColor(HState hs) {
 
 float pixelToCm(int size) {
   return (float) size/PIXEL_NBR_PER_CM;
-}
+} //<>//
 void pillar(float length, float radius1, float radius2) {
   float x, y, z;
   pushMatrix();
@@ -269,6 +277,7 @@ void object() {
         y += dy;
       } else {
         direction = false;
+        collisionStatusCol=fail;
       }
     }
     //upward
@@ -282,6 +291,7 @@ void object() {
       } else {
         movement = false;
         direction = true;
+        collisionStatusCol=normal;
       }
     }
     //TODO go to HOME position
@@ -312,43 +322,18 @@ void object() {
   noFill();
   stroke(255);
   box(mainBoxX, mainBoxY, mainBoxZ);
-  /*
-  int lineNumber = 10;
-   for(int i = 1; i <= lineNumber; i++){
-   stroke(255);
-   line(-((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),((float)mainBoxY)/2,-mainBoxZ/2,
-   -((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),-((float)mainBoxY)/2,-mainBoxZ/2);
-   
-   line(-((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2,
-   ((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2);
-   }*/
-  pushMatrix();
-  fill(153, 255, 153);
-  translate(keihinXZ[0], mainBoxY/2 - thickness / 2, keihinXZ[1]); //<>//
-  box(breadth, thickness, breadth);
-  popMatrix();
-  pushMatrix();
-  translate(keihinXZ[2], mainBoxY/2 - thickness / 2, keihinXZ[3]);
-  box(breadth, thickness, breadth);
-  popMatrix();
-  pushMatrix();
-  translate(keihinXZ[4], mainBoxY/2 - thickness / 2, keihinXZ[5]);
-  box(breadth, thickness, breadth);
-  popMatrix();
-  pushMatrix();
-  translate(keihinXZ[6], mainBoxY/2 - thickness / 2, keihinXZ[7]);
-  box(breadth, thickness, breadth);
-  popMatrix();
-  pushMatrix();
-  translate(keihinXZ[8], mainBoxY/2 - thickness / 2, keihinXZ[9]);
-  box(breadth, thickness, breadth);
-  popMatrix();
-  pushMatrix();
-  translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]); //<>//
-  box(breadth, thickness, breadth);
-  popMatrix();
+  for (int i = 0; i<num; i++) {
+    pushMatrix();
+    translate(keihinXZ[i*2], mainBoxY/2 - thickness / 2, keihinXZ[i*2+1]); //<>//
+    fill(boxCollisionStatusCols[i]);
+    box(breadth, thickness, breadth);
+    popMatrix();
+  }
+
   //Sphere
   pushMatrix();
+  fill(collisionStatusCol);
+  noStroke();
   translate(x, -mainBoxY/2 + sphereRad + y, z);
   sphere(sphereRad);
   popMatrix();
@@ -361,6 +346,8 @@ boolean collisionDetection(int sphereRad, int y, int breadth, int thickness, int
       y >= mainBoxY - thickness - sphereRad &&
       z <= keihinXZ[2*i+1] + breadth && z >= keihinXZ[2*i+1] - breadth) {
       print("1");
+      boxCollisionStatusCols[i] = hit;
+      collisionStatusCol = hit;
       return true;
     }
   }
