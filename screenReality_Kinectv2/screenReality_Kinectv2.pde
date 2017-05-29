@@ -28,10 +28,12 @@ int x = -40;
 int y = 0;
 int z = -20;
 
+GO_OPERATION gopr;
+
 void setup() {
   size(1228, 928, P3D);
   //fullScreen(P3D);
-  
+
   smooth();
   noFill();
   frameRate(24);
@@ -48,13 +50,13 @@ void setup() {
 
   camWidth = kinect.getBodyTrackImage().width;
   camHeight = kinect.getBodyTrackImage().height;
-  
+
 
   cx = pixelToCm(width);
   cy = pixelToCm(height);
-  
+
   noStroke();
-  
+
   eyeX = width/2.0;
   eyeY = height/2.0;
   eyeZ = 300;
@@ -64,31 +66,25 @@ void setup() {
   upX = 0;
   upY = 1;
   upZ = 0;
-  camera(width/2, height/2, 300,width/2,height/2,0,0,1,0);
-  
+  camera(width/2, height/2, 300, width/2, height/2, 0, 0, 1, 0);
+
   //beginCamera();
   //camera(0,0,500,0,0,0,0,1,0);
   //endCamera();
 }
 
 void draw() {
-  
+
   ambientLight(150, 150, 150); 
   lightSpecular(255, 255, 255);
   directionalLight(100, 100, 100, 0, 1, -1);
   background(0);
   image(kinect.getColorImage(), 0, 0, 320, 240);
-  
-  detectHead();
-  //beginCamera();
-  //camera(camX, camY, camZ,0,0,0,0,1,0);
-  //endCamera();
-  
-  //for object
-  object();
-  
-  if(keyPressed){
-    switch(key){
+
+
+
+  if (keyPressed) {
+    switch(key) {
     case 'a':
       eyeX -= 1.0;
       break;
@@ -104,19 +100,28 @@ void draw() {
     case 'q':
       camera();
       break;
-    
-    //for sphere down
+
+      //for sphere down
     case 't':
       movement = true;
       break;
     }
-    if(keyCode == UP){
+    if (keyCode == UP) {
       eyeZ -= 1.0;
-    } else if(keyCode == DOWN){
+    } else if (keyCode == DOWN) {
       eyeZ += 1.0;
     }
-    camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
   }
+  detectHead();
+
+  beginCamera();
+  camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
+  endCamera();
+
+  gopr = recognizeJesture();
+
+  //for object
+  object();
 }
 
 float camZ=0.5;
@@ -202,7 +207,7 @@ void pillar(float length, float radius1, float radius2) {
   popMatrix();
 }
 
-void object(){
+void object() {
   //MainBox
   int mainBoxX = 100;  //MainBox width
   int mainBoxY = 100;  //MainBox height
@@ -211,110 +216,190 @@ void object(){
   int thickness = 20;   //thickness of the keihin
   int breadth = 10;    //width of the keihin
   int num = 6;
-  
-  int keihinXZ[] = {-40,-20,  //point(x,z) of the keihin
-                    0,-20,
-                    40, -20,
-                    -40, 20,
-                    0, 20,
-                    40, 20};  
-  
+
+  int keihinXZ[] = {-40, -20, //point(x,z) of the keihin
+    0, -20, 
+    40, -20, 
+    -40, 20, 
+    0, 20, 
+    40, 20};  
+
   //for mainBox movement
-  if(movement){
-    
+  if (movement) {//Down operation
     //downward
-    if(direction){
-      if(collisionDetection(sphereRad, y, breadth, thickness, keihinXZ, mainBoxY, num)){  //collision detection
+    if (direction) {
+      if (collisionDetection(sphereRad, y, breadth, thickness, keihinXZ, mainBoxY, num)) {  //collision detection
         direction = false;
-      }
-      else if(mainBoxY >= sphereRad + y){  //move downward
+      } else if (mainBoxY >= sphereRad + y) {  //move downward
         y += dy;
-      }
-      else{
+      } else {
         direction = false;
       }
     }
-    
+
     //upward
-    if(!direction){
-      if(sphereRad <= y){
+    if (!direction) {
+      if (sphereRad <= y) {
         y -= dy;
-      }
-      else{
+      } else {
         movement = false;
         direction = true;
       }
     }
-  }  
-  
+    
+    //TODO go to HOME position
+    
+  } else {
+    //moveClane
+    switch(gopr) {
+    case R:
+      x += 1;
+      break;
+    case D://no operation
+      break;
+    case S: //Stay
+      break;
+    case L:
+    break;
+    case F:
+    break;
+    case B:
+    break;
+    }
+  }
+
+
   pushMatrix();
   translate(width/2, height/2, 0);
   noFill();
   stroke(255);
-  box(mainBoxX,mainBoxY,mainBoxZ);
-  
+  box(mainBoxX, mainBoxY, mainBoxZ);
+
   /*
   int lineNumber = 10;
-  for(int i = 1; i <= lineNumber; i++){
-    stroke(255);
-    line(-((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),((float)mainBoxY)/2,-mainBoxZ/2,
-         -((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),-((float)mainBoxY)/2,-mainBoxZ/2);
-    
-    line(-((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2,
-         ((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2);
-  }*/
-  
+   for(int i = 1; i <= lineNumber; i++){
+   stroke(255);
+   line(-((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),((float)mainBoxY)/2,-mainBoxZ/2,
+   -((float)mainBoxX)/2 + i*((float)mainBoxX)/(lineNumber+1),-((float)mainBoxY)/2,-mainBoxZ/2);
+   
+   line(-((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2,
+   ((float)mainBoxX)/2,-((float)mainBoxY)/2 + i*((float)mainBoxX)/(lineNumber+1),-mainBoxZ/2);
+   }*/
+
   pushMatrix();
-  fill(153,255,153);
+  fill(153, 255, 153);
   translate(keihinXZ[0], mainBoxY/2 - thickness / 2, keihinXZ[1]);
-  box(breadth,thickness,breadth);
+  box(breadth, thickness, breadth);
   popMatrix();
-  
+
   pushMatrix();
   translate(keihinXZ[2], mainBoxY/2 - thickness / 2, keihinXZ[3]);
-  box(breadth,thickness,breadth);
+  box(breadth, thickness, breadth);
   popMatrix();
-  
+
   pushMatrix();
   translate(keihinXZ[4], mainBoxY/2 - thickness / 2, keihinXZ[5]);
-  box(breadth,thickness,breadth);
+  box(breadth, thickness, breadth);
   popMatrix();
-  
+
   pushMatrix();
   translate(keihinXZ[6], mainBoxY/2 - thickness / 2, keihinXZ[7]);
-  box(breadth,thickness,breadth);
+  box(breadth, thickness, breadth);
   popMatrix();
-  
+
   pushMatrix();
   translate(keihinXZ[8], mainBoxY/2 - thickness / 2, keihinXZ[9]);
-  box(breadth,thickness,breadth);
+  box(breadth, thickness, breadth);
   popMatrix();
-  
+
   pushMatrix();
   translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]);
-  box(breadth,thickness,breadth);
+  box(breadth, thickness, breadth);
   popMatrix();
-  
+
   //Sphere
   pushMatrix();
   translate(x, -mainBoxY/2 + sphereRad + y, z);
   sphere(sphereRad);
   popMatrix();
-  
+
   popMatrix();
- 
 }
 
-boolean collisionDetection(int sphereRad, int y, int breadth, int thickness, int[] keihinXZ, int mainBoxY, int num){
-  
-  for(int i=0;i<num;i++){
-    if(x <= keihinXZ[2*i] + breadth && x >= keihinXZ[2*i] - breadth &&
-       y >= mainBoxY - thickness - sphereRad &&
-       z <= keihinXZ[2*i+1] + breadth && z >= keihinXZ[2*i+1] - breadth){
-         print("1");
+/*Detect collision of object and sphere.*/
+boolean collisionDetection(int sphereRad, int y, int breadth, int thickness, int[] keihinXZ, int mainBoxY, int num) {
+
+  for (int i=0; i<num; i++) {
+    if (x <= keihinXZ[2*i] + breadth && x >= keihinXZ[2*i] - breadth &&
+      y >= mainBoxY - thickness - sphereRad &&
+      z <= keihinXZ[2*i+1] + breadth && z >= keihinXZ[2*i+1] - breadth) {
+      print("1");
       return true;
     }
   }
-  
   return false;
+}
+
+enum HState {
+  OPENED, CLOSED, LASSO, NOTRACKED
+};
+enum GO_OPERATION {
+  R, L, F, B, D, S
+}//operation of movement;right, left, forward, backward, down and stay.
+GO_OPERATION recognizeJesture() {
+  GO_OPERATION go = GO_OPERATION.S;
+  ArrayList<KSkeleton> skeletonArray =  kinect.getSkeleton3d();
+  //individual JOINTS
+  for (int i = 0; i < skeletonArray.size() && i < 1; i++) {
+    KSkeleton skeleton = (KSkeleton) skeletonArray.get(i);
+    if (skeleton.isTracked()) {
+      KJoint[] joints = skeleton.getJoints();
+      KJoint hRight = joints[KinectPV2.JointType_HandRight];
+      KJoint hLeft = joints[KinectPV2.JointType_HandLeft];
+      HState hrStatus = handState(hRight.getState());
+      HState hlStatus = handState(hLeft.getState());
+      switch(hrStatus) {
+      case OPENED:
+        go = GO_OPERATION.R;
+        break;
+      case CLOSED:
+        go = GO_OPERATION.S;
+        break;
+      case LASSO:
+        go = GO_OPERATION.D;
+        [
+          movement=true;
+        break;
+      }
+    }
+  }
+  return go;
+}
+
+/*
+Different hand state
+ KinectPV2.HandState_Open
+ KinectPV2.HandState_Closed
+ KinectPV2.HandState_Lasso
+ KinectPV2.HandState_NotTracked
+ */
+HState handState(int handState) {
+  HState status;
+  switch(handState) {
+  case KinectPV2.HandState_Open:
+    status = HState.OPENED;
+    break;
+  case KinectPV2.HandState_Closed:
+    status = HState.CLOSED;
+    break;
+  case KinectPV2.HandState_Lasso:
+    status = HState.LASSO;
+    break;
+  case KinectPV2.HandState_NotTracked:
+    status = HState.NOTRACKED;
+    break;
+  default:
+    status = HState.NOTRACKED;
+  }
+  return status;
 }
