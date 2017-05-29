@@ -1,5 +1,6 @@
 import KinectPV2.KJoint;
 import KinectPV2.*;
+
 KinectPV2 kinect;
 float zVal = 300;
 float rotX = PI;
@@ -21,10 +22,22 @@ int dx = -1;         //to the home position
 int dz = -1;         //to the home position
 int dy = 1;          //downward movement
 //for sphere position
-int x = -40;
+int x = 40;
 int y = 0;
 int z = -20;
-GO_OPERATION gopr;
+
+GO_OPERATION gopr = GO_OPERATION.S;
+
+boolean isKinectEnabled =true;
+boolean isWipeDisplayed = true;
+
+color hDefo = color(255, 255, 255, 150);
+color hOpen = color(255, 0, 0, 150);
+color hClose = color(0, 0, 255, 150);
+color hLasso = color(255, 255, 0, 150);
+color hrStatusCol = hDefo;
+color hlStatusCol = hDefo;
+
 void setup() {
   size(1228, 928, P3D);
   //fullScreen(P3D);
@@ -32,76 +45,75 @@ void setup() {
   noFill();
   frameRate(24);
   kinect = new KinectPV2(this);
-   kinect.enableBodyTrackImg(true);
-   kinect.enableColorImg(true);
-   kinect.enableColorImg(true);
-   //enable 3d  with (x,y,z) position
-   kinect.enableSkeleton3DMap(true);
-   kinect.init();
-   camWidth = kinect.getBodyTrackImage().width;
-   camHeight = kinect.getBodyTrackImage().height;
+
+  kinect.enableBodyTrackImg(true);
+  kinect.enableColorImg(true);
+  kinect.enableColorImg(true);
+  //enable 3d  with (x,y,z) position
+  kinect.enableSkeleton3DMap(true);
+  kinect.init();
+  camWidth = kinect.getBodyTrackImage().width;
+  camHeight = kinect.getBodyTrackImage().height;
   cx = pixelToCm(width);
   cy = pixelToCm(height);
   noStroke();
   eyeX = width/2.0;
   eyeY = height/2.0;
-  eyeZ = 300;
+  //eyeZ = (eyeY/2)/tan(PI/6);
+  eyeZ = 600;
   cX = width/2.0;
   cY = height/2.0;
   cZ = 0;
   upX = 0;
   upY = 1;
   upZ = 0;
-  camera(width/2, height/2, 300, width/2, height/2, 0, 0, 1, 0);
-  //beginCamera();
-  //camera(0,0,500,0,0,0,0,1,0);
-  //endCamera();
+
+  beginCamera();
+  //camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
+  camera();
+  endCamera();
 }
 void draw() {
   ambientLight(150, 150, 150); 
   lightSpecular(255, 255, 255);
   directionalLight(100, 100, 100, 0, 1, -1);
   background(0);
-  image(kinect.getColorImage(), 0, 0, 320, 240);
-  if (keyPressed) {
+  drawWipe();
+  if (keyPressed == true && !isKinectEnabled) {
+    println("HOGE:"+key);
     switch(key) {
     case 'a':
-      eyeX -= 1.0;
+      eyeX -= 10;
       break;
     case 'd':
-      eyeX += 1.0;
-      break;
+      eyeX += 10;
+      break; //<>//
     case 'w':
-      eyeY -= 1.0;
+      eyeY -= 10;
       break;
     case 'x':
-      eyeY += 1.0; 
+      eyeY += 10; 
       break;
     case 'q':
       camera();
       break;
-      //for sphere down
-    case 't':
-      movement = true;
-      break;
     }
     if (keyCode == UP) {
-      eyeZ -= 1.0;
-    } else if (keyCode == DOWN) { //<>//
-      eyeZ += 1.0;
+      eyeZ -= 10;
+    } else if (keyCode == DOWN) {
+      eyeZ += 10;
     }
   }
   detectHead();
   beginCamera();
   camera(eyeX, eyeY, eyeZ, cX, cY, cZ, upX, upY, upZ);
   endCamera();
+  println("X:"+eyeX+ " Y:"+ eyeY+ " Z:"+ eyeZ);
   gopr = recognizeJesture();
   //for object
   object();
 }
-float camZ=0.5;
-float camX=0;
-float camY=0;
+
 float cx;
 float cy;
 public static final int JOINT_HEAD = KinectPV2.JointType_Head;
@@ -113,6 +125,8 @@ public static final float PIXEL_NBR_PER_CM = 50.0f;
 public static final float FAR = 60.0f;
 public static final float NEAR = 1.0f;
 public static final float RANGE_KINECT2 = 4.5f - 0.5f;
+
+
 void detectHead() {
   ArrayList<KSkeleton> skeletonArray =  kinect.getSkeleton3d();
   //individual JOINTS
@@ -124,17 +138,71 @@ void detectHead() {
       float rawHeadY = joints[JOINT_HEAD].getY();
       float rawHeadZ = joints[JOINT_HEAD].getZ();
       float normHeadZ = rawHeadZ / RANGE_KINECT2;
+      //float normHeadZ = rawHeadZ;
       float normHeadX = rawHeadX;
       float normHeadY = rawHeadY;
       float tempZ = normHeadZ;
-      float tempX = normHeadX*600;
-      float tempY = normHeadY*600;
-      camZ = 1/tempZ ;
-      camX = -tempX ;
-      camY = tempY ;
+      float tempX = normHeadX*400+width/2;
+      float tempY = normHeadY*400-height/2+100;
+      
+      println("TMPZ:"+tempZ);
+      eyeZ = 500+300*tempZ;
+      eyeX = tempX ;
+      eyeY = -tempY ;
     }
   }
 }
+
+void drawWipe() {
+  if (isWipeDisplayed) {
+    beginCamera();
+    camera();
+    endCamera();
+    image(kinect.getColorImage(), 0, 0, 320, 240);
+    pushMatrix();
+    translate(320/2, 240/2, 0);
+    rotateX(PI);
+    ArrayList<KSkeleton> skeletonArray =  kinect.getSkeleton3d();
+    //individual JOINTS
+    for (int i = 0; i < skeletonArray.size() && i < 1; i++) {
+      KSkeleton skeleton = (KSkeleton) skeletonArray.get(i);
+      if (skeleton.isTracked()) {
+        KJoint[] joints = skeleton.getJoints();
+        HState hr = handState(joints[KinectPV2.JointType_HandRight].getState());
+        if (hr != HState.NOTRACKED) {
+          hrStatusCol = getHandJestureColor(hr);
+          fill(hrStatusCol);
+          drawJoint(joints, KinectPV2.JointType_HandRight);
+        }
+        HState hl = handState(joints[KinectPV2.JointType_HandLeft].getState());
+        if (hl != HState.NOTRACKED) {
+          hlStatusCol = getHandJestureColor(hl);
+          fill(hlStatusCol);
+          drawJoint(joints, KinectPV2.JointType_HandLeft);
+        }
+      }
+    }
+    popMatrix();
+  }
+}
+void drawJoint(KJoint[] joints, int jointType) {
+  ellipse(joints[jointType].getX()*200, joints[jointType].getY()*200, 50, 50);
+}
+
+color getHandJestureColor(HState hs) {
+  switch(hs) {
+  case OPENED:
+    return hOpen;
+  case CLOSED:
+    return hClose;
+  case LASSO:
+    return hLasso;
+  default:
+    return hDefo;
+  }
+}
+
+
 float pixelToCm(int size) {
   return (float) size/PIXEL_NBR_PER_CM;
 }
@@ -145,7 +213,7 @@ void pillar(float length, float radius1, float radius2) {
   beginShape(TRIANGLE_FAN);
   y = -length / 2;
   vertex(0, y, 0);
-  for (int deg = 0; deg <= 360; deg = deg + 10) {
+  for (int deg = 0; deg <= 360; deg = deg + 10) { //<>//
     x = cos(radians(deg)) * radius1;
     z = sin(radians(deg)) * radius1;
     vertex(x, y, z);
@@ -162,7 +230,7 @@ void pillar(float length, float radius1, float radius2) {
   }
   endShape();
   //side
-  beginShape(TRIANGLE_STRIP);
+  beginShape(TRIANGLE_STRIP); //<>//
   for (int deg =0; deg <= 360; deg = deg + 5) {
     x = cos(radians(deg)) * radius1;
     y = -length / 2;
@@ -181,7 +249,7 @@ void object() {
   int mainBoxX = 100;  //MainBox width
   int mainBoxY = 100;  //MainBox height
   int mainBoxZ = 80;   //MainBox depth
-  int sphereRad = 2;   //radius of the sphere
+  int sphereRad = 4;   //radius of the sphere
   int thickness = 20;   //thickness of the keihin
   int breadth = 10;    //width of the keihin
   int num = 6;
@@ -213,33 +281,34 @@ void object() {
         x += dx;
       } else {
         movement = false;
-        direction = true; //<>//
+        direction = true;
       }
     }
     //TODO go to HOME position
   } else {
     //moveClane
     switch(gopr) {
-     case R:
-     x += 1;
-     break;
-     case F://no operation
-     z -=1;
-     break;
-    // case S: //Stay
-     //break;
-     case L:
-     x -= 1;
-     break;
-     case B:
-     z += 1;
-     break;
-     case D:
-     break;
-     }
+    case R:
+      x += 1;
+      break;
+    case F://no operation
+      z -=1;
+      break;
+      // case S: //Stay
+      //break;
+    case L:
+      x -= 1;
+      break;
+    case B:
+      z += 1;
+      break;
+    case D:
+      break;
+    }
   }
   pushMatrix();
   translate(width/2, height/2, 0);
+  scale(5);
   noFill();
   stroke(255);
   box(mainBoxX, mainBoxY, mainBoxZ);
@@ -255,7 +324,7 @@ void object() {
    }*/
   pushMatrix();
   fill(153, 255, 153);
-  translate(keihinXZ[0], mainBoxY/2 - thickness / 2, keihinXZ[1]);
+  translate(keihinXZ[0], mainBoxY/2 - thickness / 2, keihinXZ[1]); //<>//
   box(breadth, thickness, breadth);
   popMatrix();
   pushMatrix();
@@ -275,7 +344,7 @@ void object() {
   box(breadth, thickness, breadth);
   popMatrix();
   pushMatrix();
-  translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]);
+  translate(keihinXZ[10], mainBoxY/2 - thickness / 2, keihinXZ[11]); //<>//
   box(breadth, thickness, breadth);
   popMatrix();
   //Sphere
@@ -307,7 +376,7 @@ GO_OPERATION recognizeJesture() {
   GO_OPERATION go = GO_OPERATION.S;
   ArrayList<KSkeleton> skeletonArray =  kinect.getSkeleton3d();
   //individual JOINTS
-   for (int i = 0; i < skeletonArray.size() && i < 1; i++) {
+  for (int i = 0; i < skeletonArray.size() && i < 1; i++) {
     KSkeleton skeleton = (KSkeleton) skeletonArray.get(i);
     if (skeleton.isTracked()) {
       KJoint[] joints = skeleton.getJoints();
@@ -315,40 +384,40 @@ GO_OPERATION recognizeJesture() {
       KJoint hLeft = joints[KinectPV2.JointType_HandLeft];
       HState hrStatus = handState(hRight.getState());
       HState hlStatus = handState(hLeft.getState());
-      
-      
+
+
       float righthandY = joints[JOINT_righthand].getY();
       float lefthandY = joints[JOINT_lefthand].getY();
       float spineshoulderY = joints[JOINT_spineshoulder].getY();
-      
-      if(righthandY > spineshoulderY){
-      switch(hrStatus) {
-      case OPENED:
-        go = GO_OPERATION.R; //<>//
-        break;
-      case CLOSED:
-        go = GO_OPERATION.F;
-        break;
-      case LASSO:
-        go = GO_OPERATION.D;
-          movement=true;
-        break;
-      }
-      }else if(lefthandY > spineshoulderY){
-      switch(hlStatus){
+
+      if (righthandY > spineshoulderY) {
+        switch(hrStatus) {
         case OPENED:
-        go = GO_OPERATION.L;
-        break;
+          go = GO_OPERATION.R; //<>//
+          break;
         case CLOSED:
-        go = GO_OPERATION.B;
-        break;
+          go = GO_OPERATION.F;
+          break;
         case LASSO:
-        go = GO_OPERATION.D;
-        movement=true;
-        break;   
-      }
-      }else{
-      break;
+          go = GO_OPERATION.D;
+          movement=true;
+          break;
+        }
+      } else if (lefthandY > spineshoulderY) {
+        switch(hlStatus) {
+        case OPENED:
+          go = GO_OPERATION.L;
+          break;
+        case CLOSED:
+          go = GO_OPERATION.B;
+          break;
+        case LASSO:
+          go = GO_OPERATION.D;
+          movement=true;
+          break;
+        }
+      } else {
+        break;
       }
     }
   }
